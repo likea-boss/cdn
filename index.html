@@ -2,16 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>AnyClip Watch Container</title>
 </head>
 <body>
-    <div id="NA-container"></div>
     <script>
-        window.ac_vh_params = {
-            containerId: 'NA-container',
-            folderName: '31/316'
-        };
+        (() => {
+            let cdnLink = null;
+            let folderName = null;
+            let isRendered = false;
+            let source = null;
+
+            const TIMEOUT_INTERVAL = 5000;
+
+            // element ids
+            const SCRIPT_ELEMENT_ID = "script";
+            const CONTAINER_ELEMENT_ID = "NA-container";
+
+            // incoming iframe events ids
+            const SET_CDN_LINK = "SET_CDN_LINK";
+            const SET_FOLDER_NAME = "SET_FOLDER_NAME";
+
+            // outcoming iframe events ids
+            const ERROR = "LOADED";
+
+            function init() {
+                const div = document.createElement("div");
+                div.id = CONTAINER_ELEMENT_ID;
+                const script = document.createElement("script");
+                script.id = CONTAINER_ELEMENT_ID;
+
+                document.body.append(div, script);
+            }
+
+            function renderIfPossible() {
+                if (cdnLink && folderName) {
+                    window.ac_vh_params = {
+                        containerId: CONTAINER_ELEMENT_ID,
+                        folderName: folderName
+                    };
+
+                    document.getElementById(SCRIPT_ELEMENT_ID).setAttribute("src", cdnLink);
+
+                    setTimeout(() => {
+                        const element = document.getElementById(CONTAINER_ELEMENT_ID);
+
+                        if (element.children.length === 0 && source) {
+                            source.postMessage({type: ERROR});
+                        }
+                    }, TIMEOUT_INTERVAL);
+
+                    isRendered = true;
+                }
+            }
+
+            window.addEventListener("message", (e) => {
+                switch (e.data.type) {
+                    case SET_CDN_LINK:
+                        cdnLink = e.data.data;
+                        renderIfPossible();
+                        break;
+
+                    case SET_FOLDER_NAME:
+                        folderName = e.data.data;
+                        renderIfPossible();
+                        break;
+                }
+            });
+
+            init();
+        })()
     </script>
-    <script src="https://cdn19.anyclip.com/main.js"></script>
 </body>
 </html>
