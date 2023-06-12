@@ -7,23 +7,15 @@
 <body>
     <script>
         (() => {
-            let cdnLink = null;
-            let folderName = null;
-            let isRendered = false;
-            let source = null;
-
-            const TIMEOUT_INTERVAL = 5000;
-
             // element ids
             const SCRIPT_ELEMENT_ID = "script";
             const CONTAINER_ELEMENT_ID = "NA-container";
 
-            // incoming iframe events ids
-            const SET_CDN_LINK = "SET_CDN_LINK";
-            const SET_FOLDER_NAME = "SET_FOLDER_NAME";
+            // query arguments
+            const CDN_LINK = "CDN_LINK";
+            const FOLDER_NAME = "FOLDER_NAME";
 
-            // outcoming iframe events ids
-            const ERROR = "LOADED";
+            const url = new URLSearchParams(window.location.search);
 
             function init() {
                 const div = document.createElement("div");
@@ -32,43 +24,14 @@
                 script.id = SCRIPT_ELEMENT_ID;
 
                 document.body.append(div, script);
+
+                window.ac_vh_params = {
+                    containerId: CONTAINER_ELEMENT_ID,
+                    folderName: url.get(FOLDER_NAME),
+                };
+
+                document.getElementById(SCRIPT_ELEMENT_ID).setAttribute("src", url.get(CDN_LINK));
             }
-
-            function renderIfPossible() {
-                if (cdnLink && folderName) {
-                    window.ac_vh_params = {
-                        containerId: CONTAINER_ELEMENT_ID,
-                        folderName: folderName
-                    };
-
-                    document.getElementById(SCRIPT_ELEMENT_ID).setAttribute("src", cdnLink);
-
-                    setTimeout(() => {
-                        const element = document.getElementById(CONTAINER_ELEMENT_ID);
-
-                        if (element.children.length === 0 && source) {
-                            source.postMessage({type: ERROR});
-                        }
-                    }, TIMEOUT_INTERVAL);
-
-                    isRendered = true;
-                }
-            }
-
-            window.addEventListener("message", (e) => {
-                console.log("======================= MESSAGE", e.data);
-                switch (e.data.type) {
-                    case SET_CDN_LINK:
-                        cdnLink = e.data.data;
-                        renderIfPossible();
-                        break;
-
-                    case SET_FOLDER_NAME:
-                        folderName = e.data.data;
-                        renderIfPossible();
-                        break;
-                }
-            });
 
             init();
         })()
