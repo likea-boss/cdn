@@ -56,6 +56,7 @@
             }
 
             window.addEventListener("message", (e) => {
+                console.log("======================= MESSAGE", e.data);
                 switch (e.data.type) {
                     case SET_CDN_LINK:
                         cdnLink = e.data.data;
